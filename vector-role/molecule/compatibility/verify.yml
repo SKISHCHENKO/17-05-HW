@@ -1,0 +1,38 @@
+---
+- name: Verify vector role compatibility scenario
+  hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Check vector binary exists
+      ansible.builtin.command: vector --version
+      register: vector_version
+      changed_when: false
+
+    - name: Assert vector binary is available
+      ansible.builtin.assert:
+        that:
+          - vector_version.rc == 0
+          - "'vector' in vector_version.stdout | lower"
+
+    - name: Check vector config exists
+      ansible.builtin.stat:
+        path: /etc/vector/vector.yaml
+      register: vector_config
+
+    - name: Assert vector config exists
+      ansible.builtin.assert:
+        that:
+          - vector_config.stat.exists
+          - vector_config.stat.isreg
+
+    - name: Validate vector config
+      ansible.builtin.command: vector validate --no-environment /etc/vector/vector.yaml
+      register: vector_validate
+      changed_when: false
+
+    - name: Assert vector config is valid
+      ansible.builtin.assert:
+        that:
+          - vector_validate.rc == 0

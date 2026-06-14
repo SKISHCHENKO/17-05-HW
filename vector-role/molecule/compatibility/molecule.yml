@@ -1,0 +1,24 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: podman
+
+platforms:
+  - name: vector-compatibility-fedora
+    image: registry.fedoraproject.org/fedora:latest
+    pre_build_image: false
+    dockerfile: Dockerfile.j2
+    command: /bin/bash -c "while true; do sleep 10000; done"
+
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      remote_tmp: /tmp/.ansible-${USER}/tmp
+      local_tmp: /tmp/.ansible-${USER}/local
+      roles_path: ${MOLECULE_PROJECT_DIRECTORY}/..
+
+verifier:
+  name: ansible

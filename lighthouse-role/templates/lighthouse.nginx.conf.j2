@@ -1,0 +1,22 @@
+server {
+    listen {{ lighthouse_listen_port }} default_server;
+    listen [::]:{{ lighthouse_listen_port }} default_server;
+
+    server_name {{ lighthouse_server_name }};
+    root {{ lighthouse_root }};
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Прокси до ClickHouse нужен, потому что браузер открывает LightHouse по публичному IP,
+    # а ClickHouse слушает приватный IP внутри VPC.
+    location /clickhouse/ {
+        proxy_pass http://{{ lighthouse_clickhouse_host }}:{{ lighthouse_clickhouse_port }}/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 300s;
+    }
+}

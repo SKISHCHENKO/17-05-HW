@@ -1,0 +1,58 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+platforms:
+  - name: vector-ubuntu-latest
+    image: ubuntu:latest
+    pre_build_image: false
+    dockerfile: Dockerfile.j2
+    privileged: true
+    command: /lib/systemd/systemd
+    cgroupns_mode: host
+    capabilities:
+      - SYS_ADMIN
+    security_opts:
+      - seccomp=unconfined
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /tmp
+
+  - name: vector-oraclelinux-8
+    image: oraclelinux:8
+    pre_build_image: false
+    dockerfile: Dockerfile.j2
+    privileged: true
+    command: /lib/systemd/systemd
+    cgroupns_mode: host
+    capabilities:
+      - SYS_ADMIN
+    security_opts:
+      - seccomp=unconfined
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /tmp
+
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      remote_tmp: /tmp/.ansible-${USER}/tmp
+      local_tmp: /tmp/.ansible-${USER}/local
+      roles_path: ${MOLECULE_PROJECT_DIRECTORY}/..
+  inventory:
+    host_vars:
+      vector-oraclelinux-8:
+        ansible_python_interpreter: /usr/bin/python3.9
+
+
+
+verifier:
+  name: ansible

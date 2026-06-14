@@ -1,0 +1,81 @@
+---
+- name: Install Vector prerequisites on Debian family
+  ansible.builtin.apt:
+    name: "{{ vector_required_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Check Vector APT repository file
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list.d/vector.list
+  register: vector_apt_repo_file
+  when: ansible_os_family == "Debian"
+
+- name: Add Vector APT repository on Debian family
+  ansible.builtin.shell: |
+    set -e
+    bash -c "$(curl -L https://setup.vector.dev)"
+  args:
+    executable: /bin/bash
+  when:
+    - ansible_os_family == "Debian"
+    - not vector_apt_repo_file.stat.exists
+
+- name: Update APT cache after adding Vector repository
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install Vector package on Debian family
+  ansible.builtin.apt:
+    name: "{{ vector_package_name }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Vector prerequisites on RedHat family
+  ansible.builtin.command: dnf -y install curl ca-certificates gnupg2
+  args:
+    creates: /usr/bin/curl
+  when: ansible_os_family == "RedHat"
+
+- name: Check Vector YUM repository file
+  ansible.builtin.stat:
+    path: /etc/yum.repos.d/vector.repo
+  register: vector_yum_repo_file
+  when: ansible_os_family == "RedHat"
+
+- name: Add Vector YUM repository on RedHat family
+  ansible.builtin.shell: |
+    set -e
+    bash -c "$(curl -L https://setup.vector.dev)"
+  args:
+    executable: /bin/bash
+  when:
+    - ansible_os_family == "RedHat"
+    - not vector_yum_repo_file.stat.exists
+
+- name: Install Vector package on RedHat family
+  ansible.builtin.command: dnf -y install "{{ vector_package_name }}"
+  args:
+    creates: /usr/bin/vector
+  when: ansible_os_family == "RedHat"
+
+- name: Configure Vector
+  ansible.builtin.template:
+    src: vector.yaml.j2
+    dest: "{{ vector_config_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart vector
+
+- name: Enable and start Vector service
+  ansible.builtin.service:
+    name: "{{ vector_service_name }}"
+    enabled: true
+    state: started
+  when: vector_manage_service | bool
+
+

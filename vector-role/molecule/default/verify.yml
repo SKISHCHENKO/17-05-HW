@@ -1,0 +1,78 @@
+---
+- name: Verify vector role
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars:
+    vector_config_candidates:
+      - /etc/vector/vector.yaml
+      - /etc/vector/vector.yml
+      - /etc/vector/vector.toml
+
+  tasks:
+    - name: Check vector binary exists
+      ansible.builtin.command: vector --version
+      register: vector_version
+      changed_when: false
+
+    - name: Assert vector binary is available
+      ansible.builtin.assert:
+        that:
+          - vector_version.rc == 0
+          - "'vector' in vector_version.stdout | lower"
+
+    - name: Check possible vector config files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop: "{{ vector_config_candidates }}"
+      register: vector_config_stats
+
+    - name: Select existing vector config
+      ansible.builtin.set_fact:
+        vector_config_path: >-
+          {{
+            (
+              vector_config_stats.results
+              | selectattr('stat.exists')
+              | map(attribute='item')
+              | list
+              | first
+            ) | default('')
+          }}
+
+    - name: Assert vector config exists
+      ansible.builtin.assert:
+        that:
+          - vector_config_path | length > 0
+        fail_msg: "Vector config was not found in /etc/vector"
+
+    - name: Validate vector config
+      ansible.builtin.command: vector validate --no-environment "{{ vector_config_path }}"
+      register: vector_validate
+      changed_when: false
+
+    - name: Assert vector config is valid
+      ansible.builtin.assert:
+        that:
+          - vector_validate.rc == 0
+
+    - name: Check vector service is enabled
+      ansible.builtin.command: systemctl is-enabled vector
+      register: vector_enabled
+      changed_when: false
+
+    - name: Assert vector service is enabled
+      ansible.builtin.assert:
+        that:
+          - vector_enabled.stdout in ['enabled', 'static']
+
+    - name: Check vector service is active
+      ansible.builtin.command: systemctl is-active vector
+      register: vector_active
+      changed_when: false
+
+    - name: Assert vector service is active
+      ansible.builtin.assert:
+        that:
+          - vector_active.stdout == 'active'

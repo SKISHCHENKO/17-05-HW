@@ -1,0 +1,5 @@
+---
+- name: Reload nginx
+  ansible.builtin.service:
+    name: "{{ lighthouse_nginx_service }}"
+    state: reloaded

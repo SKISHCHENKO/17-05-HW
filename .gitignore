@@ -1,0 +1,29 @@
+# Python / Ansible / Molecule / Tox
+.venv/
+.tox/
+.cache/
+__pycache__/
+*.pyc
+.molecule/
+*.retry
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfvars
+!**/*.tfvars.example
+
+# Logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

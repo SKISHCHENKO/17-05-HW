@@ -1,0 +1,21 @@
+---
+# Внутренние переменные роли. Обычно их не нужно переопределять снаружи.
+vector_service_name: vector
+vector_package_name: vector
+
+vector_required_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+
+vector_old_timber_repository_file: /etc/apt/sources.list.d/timber-vector.list
+vector_repository_keyring: /usr/share/keyrings/datadog-archive-keyring.gpg
+vector_repository_filename: vector
+vector_repository_url: https://apt.vector.dev/
+vector_repository: "deb [signed-by={{ vector_repository_keyring }}] {{ vector_repository_url }} stable vector-0"
+
+vector_repository_keys:
+  - https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public
+  - https://keys.datadoghq.com/DATADOG_APT_KEY_F14F620E.public
+  - https://keys.datadoghq.com/DATADOG_APT_KEY_C0962C7D.public

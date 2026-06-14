@@ -1,0 +1,59 @@
+---
+# Пакет Vector.
+vector_package_name: vector
+
+# Имя systemd-сервиса Vector.
+vector_service_name: vector
+
+# Путь до основного конфигурационного файла Vector.
+vector_config_path: /etc/vector/vector.yaml
+
+# Пакеты, необходимые для подключения APT-репозитория Vector на Debian/Ubuntu.
+vector_required_packages:
+  - curl
+  - ca-certificates
+  - gnupg
+  - lsb-release
+
+# Старый репозиторий Timber Vector, если остался от прежних версий роли.
+vector_old_timber_repository_file: /etc/apt/sources.list.d/timber-vector.list
+
+# Keyring для APT-репозитория Vector.
+vector_repository_keyring: /usr/share/keyrings/datadog-archive-keyring.gpg
+
+# Ключи Datadog/Vector для APT-репозитория.
+vector_repository_keys:
+  - https://keys.datadoghq.com/DATADOG_APT_KEY_CURRENT.public
+  - https://keys.datadoghq.com/DATADOG_APT_KEY_F14F620E.public
+  - https://keys.datadoghq.com/DATADOG_APT_KEY_C0962C7D.public
+
+# APT-репозиторий Vector.
+vector_repository_filename: vector
+vector_repository: "deb [signed-by={{ vector_repository_keyring }}] https://apt.vector.dev/ stable vector-0"
+
+# YUM/DNF-репозиторий Vector для RedHat/OracleLinux.
+vector_yum_repository_name: vector
+vector_yum_repository_description: Vector repository
+vector_yum_repository_baseurl: https://yum.vector.dev/stable/vector-0/$basearch/
+
+# Параметры подключения Vector к ClickHouse.
+# В playbook обычно переопределяется через private_ip хоста из группы clickhouse.
+vector_clickhouse_host: 127.0.0.1
+vector_clickhouse_port: 8123
+vector_clickhouse_database: logs
+vector_clickhouse_table: vector_logs
+
+# Параметры demo source, который генерирует тестовые события.
+vector_demo_logs_interval: 1
+
+# Параметры ClickHouse sink.
+vector_skip_unknown_fields: true
+vector_compression: gzip
+
+# Режим sink для Vector.
+# clickhouse — боевой режим, console — тестовый режим для Molecule.
+vector_sink_type: clickhouse
+
+# Управлять systemd-сервисом Vector.
+# В Molecule compatibility/podman-сценарии отключается, так как контейнер без systemd.
+vector_manage_service: true

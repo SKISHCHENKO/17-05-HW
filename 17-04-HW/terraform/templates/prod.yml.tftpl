@@ -1,0 +1,23 @@
+---
+all:
+  vars:
+    ansible_user: "${ssh_user}"
+    ansible_ssh_private_key_file: "${ssh_private_key_file}"
+    ansible_python_interpreter: /usr/bin/python3
+
+  children:
+    clickhouse:
+      hosts:
+        ${clickhouse_name}:
+          ansible_host: "${clickhouse_public_ip}"
+          private_ip: "${clickhouse_private_ip}"
+
+    vector:
+      hosts:
+        ${vector_name}:
+          ansible_host: "${vector_public_ip}"
+
+    lighthouse:
+      hosts:
+        ${lighthouse_name}:
+          ansible_host: "${lighthouse_public_ip}"

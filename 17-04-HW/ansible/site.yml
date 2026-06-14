@@ -1,0 +1,60 @@
+---
+- name: Prepare all hosts
+  hosts: all
+  become: true
+  tags:
+    - common
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install common packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - unzip
+        state: present
+
+- name: Install ClickHouse
+  hosts: clickhouse
+  become: true
+  tags:
+    - clickhouse
+  roles:
+    - role: clickhouse
+  post_tasks:
+    - name: Create ClickHouse database for Vector logs
+      ansible.builtin.command:
+        cmd: "clickhouse-client --query 'CREATE DATABASE IF NOT EXISTS {{ clickhouse_database }}'"
+      changed_when: false
+
+    - name: Create ClickHouse table for Vector logs
+      ansible.builtin.command:
+        cmd: >-
+          clickhouse-client --query
+          'CREATE TABLE IF NOT EXISTS {{ clickhouse_database }}.{{ clickhouse_table }}
+          (message String)
+          ENGINE = MergeTree()
+          ORDER BY tuple()'
+      changed_when: false
+
+- name: Install Vector
+  hosts: vector
+  become: true
+  tags:
+    - vector
+  roles:
+    - role: vector-role
+
+- name: Install LightHouse
+  hosts: lighthouse
+  become: true
+  tags:
+    - lighthouse
+  roles:
+    - role: lighthouse-role

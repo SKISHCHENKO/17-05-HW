@@ -1,0 +1,25 @@
+---
+clickhouse_database: logs
+clickhouse_table: vector_logs
+clickhouse_http_port: 8123
+
+# Для роли AlexeySetevoi/ansible-clickhouse.
+# Открываем ClickHouse на всех интерфейсах ВМ, чтобы Vector и LightHouse
+# могли обратиться к нему по приватному IP внутри VPC.
+clickhouse_listen_host:
+  - "0.0.0.0"
+clickhouse_dbs_custom:
+  - name: "{{ clickhouse_database }}"
+
+# Для vector-role.
+vector_config_path: /etc/vector/vector.yaml
+vector_clickhouse_host: "{{ hostvars[groups['clickhouse'][0]].private_ip }}"
+vector_clickhouse_port: "{{ clickhouse_http_port }}"
+vector_clickhouse_database: "{{ clickhouse_database }}"
+vector_clickhouse_table: "{{ clickhouse_table }}"
+
+# Для lighthouse-role.
+lighthouse_root: /var/www/lighthouse
+lighthouse_archive_url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.tar.gz
+lighthouse_clickhouse_host: "{{ hostvars[groups['clickhouse'][0]].private_ip }}"
+lighthouse_clickhouse_port: "{{ clickhouse_http_port }}"

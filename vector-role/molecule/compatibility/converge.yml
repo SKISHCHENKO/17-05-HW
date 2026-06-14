@@ -1,0 +1,13 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  vars:
+    vector_sink_type: console
+    vector_manage_service: false
+
+  tasks:
+    - name: Include vector role
+      ansible.builtin.include_role:
+        name: vector-role

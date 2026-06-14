@@ -1,0 +1,16 @@
+---
+# Каталог, куда будет распакована статика LightHouse.
+lighthouse_root: /var/www/lighthouse
+
+# Архив LightHouse. По заданию используется репозиторий VKCOM/lighthouse.
+lighthouse_archive_url: https://github.com/VKCOM/lighthouse/archive/refs/heads/master.tar.gz
+lighthouse_archive_dest: /tmp/lighthouse-master.tar.gz
+
+# Параметры nginx virtual host.
+lighthouse_server_name: _
+lighthouse_listen_port: 80
+
+# Параметры прокси до ClickHouse.
+# В playbook обычно переопределяется через private_ip хоста из группы clickhouse.
+lighthouse_clickhouse_host: 127.0.0.1
+lighthouse_clickhouse_port: 8123

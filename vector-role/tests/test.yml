@@ -1,0 +1,6 @@
+---
+- name: Test vector-role
+  hosts: localhost
+  remote_user: root
+  roles:
+    - vector-role

@@ -1,0 +1,6 @@
+ansible-core==2.15.13
+molecule==6.0.3
+molecule-podman==2.0.3
+jmespath
+selinux
+lxml

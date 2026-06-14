@@ -1,0 +1,17 @@
+---
+# Внутренние переменные роли. Обычно их не нужно переопределять снаружи.
+lighthouse_nginx_package: nginx
+lighthouse_nginx_service: nginx
+lighthouse_nginx_user: www-data
+lighthouse_nginx_group: www-data
+
+lighthouse_nginx_sites_available: /etc/nginx/sites-available
+lighthouse_nginx_sites_enabled: /etc/nginx/sites-enabled
+lighthouse_nginx_default_site: /etc/nginx/sites-enabled/default
+lighthouse_nginx_conf_name: lighthouse.conf
+lighthouse_nginx_conf_path: "{{ lighthouse_nginx_sites_available }}/{{ lighthouse_nginx_conf_name }}"
+lighthouse_nginx_enabled_path: "{{ lighthouse_nginx_sites_enabled }}/{{ lighthouse_nginx_conf_name }}"
+
+lighthouse_required_packages:
+  - nginx
+  - unzip

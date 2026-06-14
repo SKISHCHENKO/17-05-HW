@@ -1,0 +1,66 @@
+---
+- name: Install LightHouse required packages
+  ansible.builtin.apt:
+    name: "{{ lighthouse_required_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create LightHouse root directory
+  ansible.builtin.file:
+    path: "{{ lighthouse_root }}"
+    state: directory
+    owner: "{{ lighthouse_nginx_user }}"
+    group: "{{ lighthouse_nginx_group }}"
+    mode: "0755"
+
+- name: Check existing LightHouse files
+  ansible.builtin.stat:
+    path: "{{ lighthouse_root }}/index.html"
+  register: lighthouse_index
+
+- name: Download LightHouse archive
+  ansible.builtin.get_url:
+    url: "{{ lighthouse_archive_url }}"
+    dest: "{{ lighthouse_archive_dest }}"
+    mode: "0644"
+  when: not lighthouse_index.stat.exists
+
+- name: Extract LightHouse static files
+  ansible.builtin.unarchive:
+    src: "{{ lighthouse_archive_dest }}"
+    dest: "{{ lighthouse_root }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+    owner: "{{ lighthouse_nginx_user }}"
+    group: "{{ lighthouse_nginx_group }}"
+  when: not lighthouse_index.stat.exists
+
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: "{{ lighthouse_nginx_default_site }}"
+    state: absent
+  notify: Reload nginx
+
+- name: Configure nginx for LightHouse
+  ansible.builtin.template:
+    src: lighthouse.nginx.conf.j2
+    dest: "{{ lighthouse_nginx_conf_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Enable LightHouse nginx site
+  ansible.builtin.file:
+    src: "{{ lighthouse_nginx_conf_path }}"
+    dest: "{{ lighthouse_nginx_enabled_path }}"
+    state: link
+  notify: Reload nginx
+
+- name: Enable and start nginx
+  ansible.builtin.service:
+    name: "{{ lighthouse_nginx_service }}"
+    enabled: true
+    state: started

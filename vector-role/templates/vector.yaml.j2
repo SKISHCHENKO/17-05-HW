@@ -1,0 +1,34 @@
+sources:
+  demo_logs:
+    type: demo_logs
+    format: json
+    interval: {{ vector_demo_logs_interval }}
+
+{% if vector_sink_type == "clickhouse" %}
+transforms:
+  normalize_for_clickhouse:
+    type: remap
+    inputs:
+      - demo_logs
+    source: |
+      .message = encode_json(.)
+
+sinks:
+  clickhouse:
+    type: clickhouse
+    inputs:
+      - normalize_for_clickhouse
+    endpoint: "http://{{ vector_clickhouse_host }}:{{ vector_clickhouse_port }}"
+    database: "{{ vector_clickhouse_database }}"
+    table: "{{ vector_clickhouse_table }}"
+    skip_unknown_fields: {{ vector_skip_unknown_fields | lower }}
+    compression: {{ vector_compression }}
+{% else %}
+sinks:
+  console:
+    type: console
+    inputs:
+      - demo_logs
+    encoding:
+      codec: json
+{% endif %}

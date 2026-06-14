@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Sergei Kishchenko
+  role_name: lighthouse_role
+  namespace: skishchenko
+  description: Install LightHouse static UI with nginx proxy to ClickHouse
+  company: Netology homework
+  license: MIT
+  min_ansible_version: "2.10"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+  galaxy_tags:
+    - lighthouse
+    - nginx
+    - clickhouse
+
+dependencies: []

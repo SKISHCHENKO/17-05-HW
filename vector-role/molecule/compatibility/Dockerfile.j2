@@ -1,0 +1,17 @@
+FROM {{ item.image }}
+
+RUN dnf -y install \
+      python3 \
+      sudo \
+      curl \
+      ca-certificates \
+      gnupg2 \
+      bash \
+      procps-ng \
+      iproute \
+      hostname \
+      which \
+      shadow-utils && \
+    dnf clean all
+
+CMD ["/bin/bash"]

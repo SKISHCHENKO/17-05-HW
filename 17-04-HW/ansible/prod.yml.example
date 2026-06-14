@@ -1,0 +1,24 @@
+---
+# Этот файл только пример. Реальный ansible/prod.yml создаёт Terraform автоматически.
+all:
+  vars:
+    ansible_user: "ubuntu"
+    ansible_ssh_private_key_file: "~/.ssh/id_ed25519"
+    ansible_python_interpreter: /usr/bin/python3
+
+  children:
+    clickhouse:
+      hosts:
+        clickhouse-01:
+          ansible_host: "<terraform-public-ip>"
+          private_ip: "<terraform-private-ip>"
+
+    vector:
+      hosts:
+        vector-01:
+          ansible_host: "<terraform-public-ip>"
+
+    lighthouse:
+      hosts:
+        lighthouse-01:
+          ansible_host: "<terraform-public-ip>"
