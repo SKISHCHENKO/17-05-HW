@@ -120,3 +120,99 @@ molecule verify:
 Успешный molecule test
 ![5](img/task5_1.png)
 ![5](img/task5_2.png)
+
+
+
+## Tox
+
+Для проверки роли через Tox были добавлены файлы из примера Netology в корень `vector-role`:
+
+- `tox.ini`
+- `tox-requirements.txt`
+
+Также был создан облегчённый сценарий Molecule:
+
+```text
+molecule/compatibility/
+├── converge.yml
+├── molecule.yml
+└── verify.yml
+```
+
+Сценарий `compatibility` использует драйвер `podman` и запускается из `tox.ini` командой:
+
+```bash
+tox -r
+```
+
+Внутри `tox.ini` выполняется:
+
+```bash
+molecule test -s compatibility --destroy always
+```
+
+Для запуска тестирования использовался контейнер из задания:
+
+```bash
+docker run --privileged=True \
+  -v /home/sergk/ansible-HW/vector-role:/opt/vector-role \
+  -w /opt/vector-role \
+  -it aragast/netology:latest \
+  /bin/bash
+```
+
+Внутри контейнера были проверены версии:
+
+```bash
+podman --version
+tox --version
+```
+
+При первом запуске `tox` были выявлены и исправлены ошибки:
+
+1. Внутри образа `aragast/netology:latest` команда `molecule` не была доступна глобально. Это не ошибка, потому что Molecule устанавливается самим `tox` внутрь окружения `.tox/py39`.
+2. Стандартный пример `tox.ini` с зависимостью `ansible<3.1` приводил к конфликту пакетов `ansible`, `ansible-base` и `ansible-core`. Для исправления в `tox-requirements.txt` был зафиксирован согласованный набор зависимостей: `ansible-core==2.15.13`, `molecule==6.0.3`, `molecule-podman==2.0.3`.
+3. При сборке образа через Podman внутри Docker-контейнера возникла ошибка cgroup: `writing file /sys/fs/cgroup/cgroup.subtree_control: Operation not supported`.
+4. Для обхода этих ограничений образ для Tox был собран заранее на хосте через Docker, сохранён в `.tar`, загружен внутри контейнера Netology через `podman load`, а в `molecule/compatibility/molecule.yml` был указан `pre_build_image: true`.
+5. В облегчённом Podman-сценарии нет systemd, поэтому для него используется переменная `vector_manage_service: false`. Дополнительно handler `Restart vector` был защищён условием `when: vector_manage_service | default(true) | bool`.
+
+В сценарии `compatibility` проверяется:
+
+- установка бинарника `vector`;
+- создание конфигурационного файла `/etc/vector/vector.yaml`;
+- валидность конфигурации через `vector validate --no-environment`;
+- идемпотентность роли при повторном запуске.
+
+Команда успешно выполнена:
+
+```bash
+tox -r
+```
+
+Итоговый результат:
+
+```text
+py39: commands succeeded
+congratulations :)
+```
+
+### Скриншоты:
+
+Запуск контейнера `aragast/netology`:
+![Tox 1](img/task5_3.png)
+
+Запуск `tox -r` и создание окружения `py39`:
+![Tox 2](img/task5_4.png)
+
+![Tox 3](img/task5_5.png)
+
+![Tox 4](img/task5_6.png)
+
+![Tox 5](img/task5_7.png)
+
+![Tox 6](img/task5_8.png)
+
+Успешное завершение Tox:
+![Tox 7](img/task5_9.png)
+
+

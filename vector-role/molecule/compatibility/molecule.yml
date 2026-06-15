@@ -6,10 +6,9 @@ driver:
   name: podman
 
 platforms:
-  - name: vector-compatibility-fedora
-    image: registry.fedoraproject.org/fedora:latest
-    pre_build_image: false
-    dockerfile: Dockerfile.j2
+  - name: vector-compatibility-ubuntu
+    image: vector-tox-ubuntu:latest
+    pre_build_image: true
     command: /bin/bash -c "while true; do sleep 10000; done"
 
 provisioner:

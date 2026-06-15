@@ -1,4 +1,4 @@
-FROM {{ item.image }}
+FROM ubuntu:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
